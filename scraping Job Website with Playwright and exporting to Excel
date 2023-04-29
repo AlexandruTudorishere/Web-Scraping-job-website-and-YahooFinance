@@ -1,0 +1,54 @@
+from playwright.sync_api import sync_playwright
+import json
+from json2excel import Json2Excel
+
+
+
+def scrape(company_id,job):
+    try:
+        jobs = {
+            'row1': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[2]'),
+            'row2': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[4]'),
+            'row3': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[5]'),
+            'row4': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[7]'),
+            'row5': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[8]'),
+            'row6': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[9]'),
+            'row7': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[10]'),
+            'row8': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[11]'),
+            'row9': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[12]'),
+            'row10': page.inner_text('//*[@id="app"]/div[8]/div/div/div[1]/div/div/div/div[13]'),
+        }
+        print(jobs)
+        return jobs
+    except:
+        pass
+
+with sync_playwright() as p:
+    print("Use The following Names & ID's:", "for amazon : 266", "for oracle : 19", "for ibm    : 20", "for hp     : 21", "for ubisoft   :51","for gameloft   :52", sep='\n')
+    name = input("Enter company name: ")
+    company_id = input("Enter the company ID ")
+    job = input("Enter the job to scrape or press 'ENTER' for All Jobs ")
+    pg_nr = input('What page to scrape? ')
+    browser = p.chromium.launch(headless=False, slow_mo=50)
+    page = browser.new_page()
+    page.goto('https://www.undelucram.ro')
+    page.click('button[name=save-cookies]')
+    page.click('button[id=loginModalJs]')
+    page.fill('input[placeholder=Parola]', 'Password')
+    page.fill('input[class=form-control]', 'Email')
+    page.click('input[value=Autentificare]')
+    page.click('//*[@id="app"]/div[10]/div/div/div/a[2]')
+    page.goto(f"https://www.undelucram.ro/salarii-{name}-totul-despre-mediul-de-lucru-interviu-salariu-{company_id}?jobTitle={job}&page={pg_nr}")
+    job_data = scrape(company_id, job)
+
+
+with open('undelucram.json','w') as f:
+    json.dump(job_data,f,indent =2)
+
+
+
+if __name__ == '__main__':
+    json2excel = Json2Excel()
+    jsons = json.loads(open('undelucram.json').read())
+    print(json2excel.run(jsons))
+print('Exported  to Excel!')
